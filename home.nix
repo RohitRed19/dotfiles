@@ -20,24 +20,64 @@ in
     nerd-fonts.hack
   ];
   fonts.fontconfig.enable = true;
-  home.sessionVariables.EDITOR = "nvim";
+
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    NVM_DIR = "$HOME/.nvm";
+    BUN_INSTALL = "$HOME/.bun";
+    SDKMAN_DIR = "$HOME/.sdkman";
+    DOCKER_HOST = "unix://$HOME/.colima/default/docker.sock";
+  };
+
+  home.sessionPath = [
+    "$HOME/.local/bin"
+    "$HOME/.local/share/aquaproj-aqua/bin"
+    "$HOME/.bun/bin"
+    "$HOME/.krew/bin"
+    "/Applications/Wireshark.app/Contents/MacOS"
+    "/Applications/IntelliJ IDEA.app/Contents/MacOS"
+  ];
 
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true;      # ghost text from history
     syntaxHighlighting.enable = true;  # commands turn green when valid
-    initContent = ''
-      bindkey '^f' autosuggest-accept
-    '';
+
+    # Formerly a hand-edited ~/.zshrc (Oh My Zsh) that the Oh My Zsh
+    # installer had overwritten, silently detaching it from this config.
+    # Migrated in so home-manager owns ~/.zshrc again. Prompt stays on
+    # starship (below); oh-my-zsh is only used for the git/kubectl plugins.
+    oh-my-zsh = {
+      enable = true;
+      plugins = [ "git" "kubectl" ];
+      extraConfig = ''
+        zstyle ':omz:update' mode auto
+      '';
+    };
+
     shellAliases = {
       ".." = "cd ..";
-      add = "git add .";
-      push = "git push";
-      pull = "git pull";
-      m = "git switch main";
-      cc = "claude --dangerously-skip-permissions";
-      co = "codex --full-auto";
+      "add" = "git add .";
+      "push" = "git push";
+      "pull" = "git pull";
+      "m" = "git switch main";
+      "cc" = "claude --dangerously-skip-permissions";
+      "co" = "codex --full-auto";
+      "ls" = "lsd";
+      "ls-tree" = "lsd --tree";
+      "idea" = "idea";
     };
+
+    initContent = ''
+      bindkey '^f' autosuggest-accept
+
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+      [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
+      [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
+
+      setopt TRANSIENT_RPROMPT
+    '';
   };
 
   programs.starship = {
