@@ -1,5 +1,5 @@
 [keys]
-prefix = "ctrl+b"
+prefix = "ctrl+a"
 focus_pane_left  = "prefix+h"
 focus_pane_down  = "prefix+j"
 focus_pane_up    = "prefix+k"
@@ -14,4 +14,4 @@ copy_mode  = "prefix+y"  # herdr's copy-mode entry key; copy-mode's own internal
 
 [ui]
 # Agents panel order: explicit choice of "spaces" (grouped by space, the default) over "priority".
-agent_panel_sort = "spaces"
+agent_panel_sort = "priority"
