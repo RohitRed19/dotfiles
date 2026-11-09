@@ -86,6 +86,7 @@
       "merve"
       "mise"
       "mpdecimal"
+      "mysql-client"
       "nbytes"
       "ncurses"
       "neovim"
@@ -126,6 +127,7 @@
       "claude-code"
       "gcloud-cli"
       "ngrok"
+      "opensuperwhisper"
       "warp"
       "wireshark-chmodbpf"
     ];

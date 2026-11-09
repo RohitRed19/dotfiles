@@ -34,6 +34,7 @@ in
     "$HOME/.local/share/aquaproj-aqua/bin"
     "$HOME/.bun/bin"
     "$HOME/.krew/bin"
+    "/opt/homebrew/opt/mysql-client/bin"
     "/Applications/Wireshark.app/Contents/MacOS"
     "/Applications/IntelliJ IDEA.app/Contents/MacOS"
   ];
@@ -62,10 +63,17 @@ in
       "pull" = "git pull";
       "m" = "git switch main";
       "cc" = "claude --dangerously-skip-permissions";
-      "co" = "codex --full-auto";
+      # codex 0.153 dropped --full-auto; workspace-write + never is the
+      # equivalent (auto-run, sandboxed to the repo).
+      "co" = "codex --sandbox workspace-write --ask-for-approval never";
       "ls" = "lsd";
       "ls-tree" = "lsd --tree";
       "idea" = "idea";
+      # zsh is generated from home.nix, so "edit my zshrc" means edit the nix
+      # file and re-switch. zshlocal is the hand-edit escape hatch sourced below.
+      "zshconfig" = "$EDITOR $HOME/.dotfiles/home.nix";
+      "zshlocal" = "$EDITOR $HOME/.zshrc.local";
+      "rebuild" = "$HOME/.dotfiles/rebuild.sh";
     };
 
     initContent = ''
@@ -76,7 +84,18 @@ in
       [ -s "$BUN_INSTALL/_bun" ] && source "$BUN_INSTALL/_bun"
       [[ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]] && source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
+      # Work repos ship an .npmrc whose _authToken is ''${NPM_TOKEN}. A project
+      # .npmrc overrides ~/.npmrc for the same key, so without this the token
+      # expands to empty and every pnpm/npm install 401s. Read it back out of
+      # ~/.npmrc so the credential still lives in exactly one place.
+      export NPM_TOKEN="$(grep -m1 '_authToken=' ~/.npmrc 2>/dev/null | sed -E 's/.*_authToken=//')"
+
       setopt TRANSIENT_RPROMPT
+
+      # Escape hatch for throwaway or machine-local shell tweaks that are not
+      # worth a rebuild. Anything here is unmanaged and untracked; promote it
+      # into this file once it earns a permanent place.
+      [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
     '';
   };
 
@@ -103,6 +122,12 @@ in
   home.file.".claude/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/settings.json";
 
+  # Authored Claude skills. Linked as a directory so new skills land in the repo
+  # automatically. ~/.claude/plugins stays unmanaged - Claude Code writes its own
+  # marketplace and install caches there.
+  home.file.".claude/skills".source =
+    config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.claude/skills";
+
   # Keep Pi's credential and runtime state local by linking only authored files and directories.
   home.file.".pi/agent/themes".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/themes";
@@ -112,6 +137,13 @@ in
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/models.json";
   home.file.".pi/agent/settings.json".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/.pi/agent/settings.json";
+
+  # codex ships inside the ChatGPT app bundle and nothing puts it on PATH.
+  # ~/.local/bin is already on sessionPath, so link the one binary there rather
+  # than adding the whole Resources directory (which holds unrelated helpers).
+  home.file.".local/bin/codex".source =
+    config.lib.file.mkOutOfStoreSymlink
+      "/Applications/ChatGPT.app/Contents/Resources/codex";
 
   home.file.".claude/CLAUDE.md".source =
     config.lib.file.mkOutOfStoreSymlink "${dotfiles}/home/AGENTS.md";

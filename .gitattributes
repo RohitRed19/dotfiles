@@ -1,0 +1,2 @@
+# Strip machine-local work plugins before commit. Filter is set up by rebuild.sh.
+home/.claude/settings.json filter=claude-settings

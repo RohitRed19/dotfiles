@@ -17,3 +17,19 @@ result-*
 
 # no-mistakes local validation state - never commit in this public repo
 .no-mistakes/
+
+# Work-specific Claude skills. They live here so Home Manager keeps them
+# symlinked and they survive a ~/.claude rebuild, but they describe internal
+# infrastructure and this repo is public - so they are never committed.
+/home/.claude/skills/rtb-timeline-query/
+/home/.claude/skills/youtrack-flow/
+/home/.claude/skills/folio/
+/home/.claude/skills/wiki-ingest/
+/home/.claude/skills/wiki-retrieve/
+/home/.claude/skills/wiki-index/
+
+# Skills that Claude Code syncs from the account at runtime - a cache, not authored.
+/home/.claude/skills/synced/
+
+# herdr runtime state.
+/home/.config/herdr/release-notes.json
